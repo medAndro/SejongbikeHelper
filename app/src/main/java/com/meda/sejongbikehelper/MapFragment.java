@@ -4,13 +4,21 @@ package com.meda.sejongbikehelper;
 import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PointF;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,16 +42,24 @@ import com.naver.maps.map.LocationTrackingMode;
 import com.naver.maps.map.MapView;
 import com.naver.maps.map.NaverMap;
 import com.naver.maps.map.OnMapReadyCallback;
+import com.naver.maps.map.UiSettings;
 import com.naver.maps.map.overlay.Align;
+import com.naver.maps.map.overlay.ArrowheadPathOverlay;
 import com.naver.maps.map.overlay.InfoWindow;
 import com.naver.maps.map.overlay.Marker;
 import com.naver.maps.map.overlay.Overlay;
 import com.naver.maps.map.overlay.OverlayImage;
 import com.naver.maps.map.util.FusedLocationSource;
 import com.naver.maps.map.util.MarkerIcons;
+import com.naver.maps.map.widget.CompassView;
+import com.naver.maps.map.widget.LocationButtonView;
+import com.naver.maps.map.widget.ScaleBarView;
+import com.naver.maps.map.widget.ZoomControlView;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class MapFragment extends Fragment implements OnMapReadyCallback
@@ -60,21 +76,32 @@ public class MapFragment extends Fragment implements OnMapReadyCallback
     JsonArray jsonArray;
     private RequestQueue queue;
     private Context context;
+    private String gpsButtonText;
+    private static final String KEY_GPSBUTTON_TEXT = "key_gpsbutton_text";
     ViewGroup rootView;
     Button addBookmarkBtn;
     Button refreshBtn;
+    Button gpsBtn;
+    private static final int PERMISSION_REQUEST_LOCATION = 1;
     Marker clickedMarker = new Marker();
     ProgressDialog spinDialog;
-
+    ArrowheadPathOverlay arrowheadPath;
     //위치 권한요구
     private FusedLocationSource locationSource;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1000;
     private static final String[] PERMISSIONS = {
             Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_BACKGROUND_LOCATION
     };
 
+    public void setStopGpsService(){
+        gpsButtonText = "주행기록 시작";
+        gpsBtn.setText(gpsButtonText);
 
+        SharedPreferences prefs = getContext().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
+        prefs.edit().putString(KEY_GPSBUTTON_TEXT, gpsButtonText).apply();
+    }
     public void println(String data) {
         Toast.makeText(getContext(),data, Toast.LENGTH_LONG).show();
     }
@@ -91,6 +118,23 @@ public class MapFragment extends Fragment implements OnMapReadyCallback
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        locationSource = new FusedLocationSource(this, LOCATION_PERMISSION_REQUEST_CODE);
+
+    }
+    public void setGpsButtonText(){
+        if (((MainActivity)getActivity()).isGpsServiceRunning()) {
+            ((MainActivity)getActivity()).stopGpsService();
+            Toast.makeText(getContext(), "주행정보 기록을 중지합니다.", Toast.LENGTH_SHORT).show();
+            gpsButtonText = "주행기록 시작";
+        } else {
+            ((MainActivity)getActivity()).startGpsService();
+            Toast.makeText(getContext(), "주행정보 기록을 시작합니다.", Toast.LENGTH_SHORT).show();
+            gpsButtonText = "주행기록 중지";
+        }
+        gpsBtn.setText(gpsButtonText);
+
+        SharedPreferences prefs = getContext().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
+        prefs.edit().putString(KEY_GPSBUTTON_TEXT, gpsButtonText).apply();
     }
 
     @Override
@@ -141,6 +185,44 @@ public class MapFragment extends Fragment implements OnMapReadyCallback
                 makeRequest();
             }
         });
+
+        gpsBtn = rootView.findViewById(R.id.gpsLogBtn);
+        gpsBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                int permissionCheck = ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION);
+                int backgroundPermissionCheck = ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_BACKGROUND_LOCATION);
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    if (permissionCheck == PackageManager.PERMISSION_DENIED || backgroundPermissionCheck == PackageManager.PERMISSION_DENIED) {
+                        // 권한이 거부되어 있는 경우
+                        Intent intent = new Intent();
+                        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                        Uri uri = Uri.fromParts("package",  getContext().getPackageName(), null);
+                        intent.setData(uri);
+                        startActivity(intent);
+                        Toast.makeText(getContext(), "백그라운드에서 기록하기 위해\n위치권한을 항상허용으로 설정하세요", Toast.LENGTH_SHORT).show();
+                    } else {
+                        // 권한이 허용되어 있는 경우
+                        setGpsButtonText();
+                    }
+                }else{
+                    if (permissionCheck == PackageManager.PERMISSION_DENIED) {
+                        // 권한이 거부되어 있는 경우
+                        Intent intent = new Intent();
+                        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                        Uri uri = Uri.fromParts("package",  getContext().getPackageName(), null);
+                        intent.setData(uri);
+                        startActivity(intent);
+                        Toast.makeText(getContext(), "백그라운드에서 기록하기 위해\n위치권한을 허용으로 설정하세요", Toast.LENGTH_SHORT).show();
+                    } else {
+                        // 권한이 허용되어 있는 경우
+                        setGpsButtonText();
+                    }
+                }
+            }
+        });
+
         if (queue == null) {
             queue = Volley.newRequestQueue(context);
             makeRequest();
@@ -237,7 +319,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback
                 }
             });
             marker.setMap(nMap);
-            nMap.setLocationSource(locationSource);  //현재 위치
+
+
         }
         spinDialog.dismiss();
         return;
@@ -249,7 +332,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback
         if (locationSource.onRequestPermissionsResult(
                 requestCode, permissions, grantResults)) {
             if (!locationSource.isActivated()) { // 권한 거부됨
-                nMap.setLocationTrackingMode(LocationTrackingMode.Follow);
+                nMap.setLocationTrackingMode(LocationTrackingMode.Face);
+
             }
             return;
         }
@@ -277,11 +361,47 @@ public class MapFragment extends Fragment implements OnMapReadyCallback
                 }
             }
         });
+        UiSettings uiSettings = nMap.getUiSettings();
+        uiSettings.setCompassEnabled(false); // 기본값 : true
+        uiSettings.setZoomControlEnabled(false); // 기본값 : true
+        uiSettings.setLocationButtonEnabled(false); // 기본값 : false
 
-        locationSource = new FusedLocationSource(this, LOCATION_PERMISSION_REQUEST_CODE);
+        CompassView compassView = rootView.findViewById(R.id.compass);
+        compassView.setMap(nMap);
+        ZoomControlView zoomControlView = rootView.findViewById(R.id.zoom);
+        zoomControlView.setMap(nMap);
+        LocationButtonView locationButtonView = rootView.findViewById(R.id.location);
+        locationButtonView.setMap(nMap);
+
+
+
         nMap.setLocationSource(locationSource);  //현재 위치
+
         nMap.setLocationTrackingMode(LocationTrackingMode.Follow);
         naverMap.setCameraPosition(cameraPosition);
+    }
+
+    public void showGpsHistory(List<LatLng> gpslist){
+        arrowheadPath = new ArrowheadPathOverlay();
+
+        arrowheadPath.setCoords(gpslist);
+        arrowheadPath.setHeadSizeRatio(5);
+        arrowheadPath.setWidth(10);
+        arrowheadPath.setColor(Color.GREEN);
+        LatLng last = gpslist.get(gpslist.size() - 1);
+        CameraPosition cameraPosition = new CameraPosition(
+                new LatLng(last.latitude, last.longitude),   // 위치 지정
+                18
+        );
+        nMap.setCameraPosition(cameraPosition);
+        arrowheadPath.setMap(nMap);
+    }
+
+    public void setNillArrow(){
+        if(arrowheadPath!=null){
+            arrowheadPath.setMap(null);
+        }
+
     }
 
     @Override
@@ -289,6 +409,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback
     {
         super.onStart();
         mapView.onStart();
+
     }
 
     @Override

@@ -51,6 +51,7 @@ public class PushService extends Service {
     public static ArrayList<JsonObject> old_bike_list = new ArrayList();
     int value = 0;
     int notinum = 1;
+
     public void showNoti(String title, String contents){
         builder = null;
         manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
