@@ -13,6 +13,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -27,7 +28,7 @@ public class GpsLogAdapter extends ArrayAdapter implements AdapterView.OnItemCli
     }
     class ViewHolder {
         public TextView logtime;
-        public Switch notiSwitch;
+        public TextView logDistance;
     }
 
     public GpsLogAdapter(Context context, ArrayList list){
@@ -47,6 +48,7 @@ public class GpsLogAdapter extends ArrayAdapter implements AdapterView.OnItemCli
 
         viewHolder = new ViewHolder();
         viewHolder.logtime = (TextView) convertView.findViewById(R.id.logTime);
+        viewHolder.logDistance = (TextView) convertView.findViewById(R.id.textView_distance);
         Button removeBtn = convertView.findViewById(R.id.gpslist_remove_btn);
 
         final GPS gpslogList = (GPS) list.get(position);
@@ -67,6 +69,7 @@ public class GpsLogAdapter extends ArrayAdapter implements AdapterView.OnItemCli
         });
 
         Log.d("변환하려던수",gpslogList.getTime());
+        Log.d("거리",""+gpslogList.getDistance());
         Date date = new Date(Long.parseLong(gpslogList.getTime()));
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
@@ -78,6 +81,17 @@ public class GpsLogAdapter extends ArrayAdapter implements AdapterView.OnItemCli
         int second = calendar.get(Calendar.SECOND); // 초
         month+=1;
         viewHolder.logtime.setText(year+"년 "+ month +"월 "+day+"일 - "+hour+"시 "+minute+"분");
+        double distanceValue = gpslogList.getDistance();
+        if(distanceValue>=1000){
+            double kilometer = distanceValue / 1000.0; // 미터를 킬로미터로 변환
+            DecimalFormat df = new DecimalFormat("#.##");
+            String formattedValue = df.format(kilometer);
+            viewHolder.logDistance.setText(formattedValue+"\nKm");
+        }else{
+            DecimalFormat df = new DecimalFormat("#.#");
+            String formattedValue = df.format(distanceValue);
+            viewHolder.logDistance.setText(formattedValue+"\nM");
+        }
 
         return convertView;
     }

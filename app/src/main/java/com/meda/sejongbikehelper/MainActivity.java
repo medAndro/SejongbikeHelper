@@ -78,8 +78,8 @@ public class MainActivity extends AppCompatActivity {
                 "timestamp TEXT)";
         private static final String SQL_CREATE_TABLE_GPS_LIST = "CREATE TABLE " +
                 "gps_list (" +
-                "gpsListTime TEXT PRIMARY KEY)";
-
+                "gpsListTime TEXT PRIMARY KEY," +
+                "distance REAL)";
 
         public MyDatabaseHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -126,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void historyMapView(String time) {
-        String selectQuery = "SELECT * FROM gps_data WHERE gpsListID = "+time;
+        String selectQuery = "SELECT * FROM gps_data WHERE gpsListID = "+time+ " ORDER BY timestamp ASC";
         List<LatLng> arrList = new ArrayList<>();
         Cursor cursor = db.rawQuery(selectQuery, null);
         if (cursor.moveToFirst()) {
@@ -151,8 +151,6 @@ public class MainActivity extends AppCompatActivity {
             TabLayout.Tab mapTab = tabs.getTabAt(0); // "지도" 탭의 인덱스는 0
             mapTab.select();
         }
-
-
     }
 
 
@@ -193,13 +191,14 @@ public class MainActivity extends AppCompatActivity {
 
         gpsLogs = new ArrayList<>();
         gpsLogs.clear();
-        String selectQuery = "SELECT * FROM gps_list";
+        String selectQuery = "SELECT * FROM gps_list ORDER BY gpsListTime DESC";
         Cursor cursor = db.rawQuery(selectQuery, null);
         if (cursor.moveToFirst()) {
             do {
                 String gpsListTime = cursor.getString(0);
-                Log.d("GPS Data", "GPS Time: "+gpsListTime);
-                gpsLogs.add(new GPS(gpsListTime));
+                double distance = cursor.getDouble(1);
+                Log.d("GPS Data", "GPS Time: "+gpsListTime+"distance: "+distance);
+                gpsLogs.add(new GPS(gpsListTime, distance));
             } while (cursor.moveToNext());
         }
 
@@ -319,7 +318,6 @@ public class MainActivity extends AppCompatActivity {
                         fragmentManager.beginTransaction().add(R.id.container, gpsLogFragment, "gpsLogFragment").commit();
                     }else if(gpsLogFragment != null){
                         fragmentManager.beginTransaction().show(gpsLogFragment).commit();
-                        ReadGpsLogData();
                         ((GpsLogFragment) getSupportFragmentManager().findFragmentByTag("gpsLogFragment")).listDataChange();
                         ((MapFragment) getSupportFragmentManager().findFragmentByTag("mapFragment")).setNillArrow();
                     }
@@ -406,6 +404,7 @@ public class MainActivity extends AppCompatActivity {
     {
         serviceIntent = new Intent(this, GpsService.class);
         stopService(serviceIntent);
+        ReadGpsLogData();
     }
 
 

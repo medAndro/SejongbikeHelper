@@ -40,6 +40,19 @@
                         android:layout_height="match_parent"
                         android:src="@drawable/new_bike" />
 
+                    <TextView
+                        android:id="@+id/textView_distance"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:text="xM"
+                        android:textSize="24sp"
+                        android:textColor="@android:color/white"
+                        android:textStyle="bold"
+                        android:background="#80000000"
+                        android:padding="16dp"
+                        android:gravity="center"
+                        android:layout_gravity="center" />
+
                 </FrameLayout>
 
             </androidx.cardview.widget.CardView>

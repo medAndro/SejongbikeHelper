@@ -1,6 +1,7 @@
 package com.meda.sejongbikehelper;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -153,12 +154,12 @@ public class GpsService extends Service implements LocationListener {
         task.execute();
 
         firstRun=true;
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "1");
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "2");
         builder.setSmallIcon(R.mipmap.ic_launcher);
         NotificationCompat.BigTextStyle style = new NotificationCompat.BigTextStyle();
         style.bigText("어울링Helper로 돌아가려면 클릭하세요.");
         style.setBigContentTitle(null);
-        style.setSummaryText("주행기록 로깅중");
+        style.setSummaryText("주행정보 기록중");
         builder.setContentText(null);
         builder.setContentTitle(null);
         builder.setOngoing(true);
@@ -180,23 +181,24 @@ public class GpsService extends Service implements LocationListener {
         builder.setContentIntent(pendingIntent);
         NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            manager.createNotificationChannel(new NotificationChannel("1", "포그라운드 서비스", NotificationManager.IMPORTANCE_NONE));
+            manager.createNotificationChannel(new NotificationChannel("2", "포그라운드 서비스", NotificationManager.IMPORTANCE_NONE));
         }
         Notification notification = builder.build();
-        startForeground(1, notification);
+        startForeground(2, notification);
     }
     class BackgroundTask extends AsyncTask<Integer, String, Integer> {
         int value = 0;
         String result = "";
         double templat = 0.0;
         double templon = 0.0;
+        double distance = 0.0;
         String initTime = String.valueOf(System.currentTimeMillis());
         @RequiresApi(api = Build.VERSION_CODES.CUPCAKE)
         @Override
         protected Integer doInBackground(Integer... values) {
             ContentValues GPSListvalues = new ContentValues();
-            Log.d("음수인가?",""+initTime);
             GPSListvalues.put("gpsListTime", ""+initTime); // 초기 시간
+            GPSListvalues.put("distance", distance); // 초기 거리
             db.insert("gps_list", null, GPSListvalues);
             while(!isCancelled()){
                 try{
@@ -205,6 +207,17 @@ public class GpsService extends Service implements LocationListener {
                     //println("스레드작동");
                     Location location = lastLocation;
                     if (location!=null && location.getLatitude() != templat && location.getLatitude() != templon  ){
+                        if(templat!=0.0 && templon!=0.0){
+                            Location locationA = new Location("point A");
+                            locationA.setLatitude(templat);
+                            locationA.setLongitude(templon);
+                            Location locationB = new Location("point B");
+                            locationB.setLatitude(location.getLatitude());
+                            locationB.setLongitude(location.getLatitude());
+                            distance += locationA.distanceTo(locationB);
+                        }
+
+
                         templat = location.getLatitude();
                         templon = location.getLatitude();
                         ContentValues GPSvalues = new ContentValues();
@@ -213,24 +226,14 @@ public class GpsService extends Service implements LocationListener {
                         GPSvalues.put("longitude", location.getLongitude());
                         GPSvalues.put("timestamp", ""+String.valueOf(System.currentTimeMillis())); // 현재 시간
                         db.insert("gps_data", null, GPSvalues);
-                        println(value + "번째 체크중 - 현재 위치: " + location.getLatitude() + ", " + location.getLongitude());
-                        String selectQuery = "SELECT * FROM gps_data WHERE gpsListID = "+initTime;
-                        Cursor cursor = db.rawQuery(selectQuery, null);
-                        if (cursor.moveToFirst()) {
-                            do {
-                                int gpsDataID = cursor.getInt(0);
-                                String gpsListID = cursor.getString(1);
-                                double latitude = cursor.getDouble(2);
-                                double longitude = cursor.getDouble(3);
-                                String timestamp = cursor.getString(4);
-                                //cursor.getColumnIndex("timestamp")
 
-                                // 조회한 데이터를 사용할 수 있습니다.
-                                // 예를 들어, 로그로 출력해 볼 수 있습니다.
+                        ContentValues updateValues = new ContentValues();
+                        updateValues.put("distance", distance); // 수정할 distance 값
+                        String whereClause = "gpsListTime = ?"; // 수정 대상 row의 조건 설정
+                        String[] whereArgs = new String[] { String.valueOf(initTime) }; // 수정 대상 row의 조건 값
+                        int rowsUpdated = db.update("gps_list", updateValues, whereClause, whereArgs);
 
-                                Log.d("GPS Data", "GPS Data ID: " + gpsDataID + ", GPS List ID: " + gpsListID + ", Latitude: " + latitude + ", Longitude: " + longitude + ", Timestamp: " + timestamp);
-                            } while (cursor.moveToNext());
-                        }
+                        println(value + "번째 체크중 - 현재 위치: " + location.getLatitude() + ", " + location.getLongitude()+"업데이트:"+rowsUpdated);
 
                         value++;
                     }
