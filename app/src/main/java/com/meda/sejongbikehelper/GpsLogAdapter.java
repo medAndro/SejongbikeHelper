@@ -84,7 +84,7 @@ public class GpsLogAdapter extends ArrayAdapter implements AdapterView.OnItemCli
         double distanceValue = gpslogList.getDistance();
         if(distanceValue>=1000){
             double kilometer = distanceValue / 1000.0; // 미터를 킬로미터로 변환
-            DecimalFormat df = new DecimalFormat("#.##");
+            DecimalFormat df = new DecimalFormat("#.#");
             String formattedValue = df.format(kilometer);
             viewHolder.logDistance.setText(formattedValue+"\nKm");
         }else{

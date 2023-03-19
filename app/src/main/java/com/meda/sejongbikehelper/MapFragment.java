@@ -37,7 +37,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.naver.maps.geometry.LatLng;
+import com.naver.maps.geometry.LatLngBounds;
 import com.naver.maps.map.CameraPosition;
+import com.naver.maps.map.CameraUpdate;
 import com.naver.maps.map.LocationTrackingMode;
 import com.naver.maps.map.MapView;
 import com.naver.maps.map.NaverMap;
@@ -388,12 +390,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback
         arrowheadPath.setHeadSizeRatio(5);
         arrowheadPath.setWidth(10);
         arrowheadPath.setColor(Color.GREEN);
-        LatLng last = gpslist.get(gpslist.size() - 1);
-        CameraPosition cameraPosition = new CameraPosition(
-                new LatLng(last.latitude, last.longitude),   // 위치 지정
-                18
-        );
-        nMap.setCameraPosition(cameraPosition);
+        nMap.moveCamera(CameraUpdate.fitBounds(LatLngBounds.from(gpslist)));
+
+        if(nMap.getCameraPosition().zoom>1){
+            nMap.moveCamera(CameraUpdate.zoomTo(nMap.getCameraPosition().zoom-0.5));
+        }
+
         arrowheadPath.setMap(nMap);
     }
 
