@@ -51,6 +51,7 @@ import com.naver.maps.map.overlay.InfoWindow;
 import com.naver.maps.map.overlay.Marker;
 import com.naver.maps.map.overlay.Overlay;
 import com.naver.maps.map.overlay.OverlayImage;
+import com.naver.maps.map.overlay.PathOverlay;
 import com.naver.maps.map.util.FusedLocationSource;
 import com.naver.maps.map.util.MarkerIcons;
 import com.naver.maps.map.widget.CompassView;
@@ -87,7 +88,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback
     private static final int PERMISSION_REQUEST_LOCATION = 1;
     Marker clickedMarker = new Marker();
     ProgressDialog spinDialog;
-    ArrowheadPathOverlay arrowheadPath;
+    PathOverlay Path;
     //위치 권한요구
     private FusedLocationSource locationSource;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1000;
@@ -384,24 +385,25 @@ public class MapFragment extends Fragment implements OnMapReadyCallback
     }
 
     public void showGpsHistory(List<LatLng> gpslist){
-        arrowheadPath = new ArrowheadPathOverlay();
+        Path = new PathOverlay();
 
-        arrowheadPath.setCoords(gpslist);
-        arrowheadPath.setHeadSizeRatio(5);
-        arrowheadPath.setWidth(10);
-        arrowheadPath.setColor(Color.GREEN);
+        Path.setCoords(gpslist);
+
+        Path.setWidth(20);
+        Path.setColor(Color.BLUE);
         nMap.moveCamera(CameraUpdate.fitBounds(LatLngBounds.from(gpslist)));
 
         if(nMap.getCameraPosition().zoom>1){
             nMap.moveCamera(CameraUpdate.zoomTo(nMap.getCameraPosition().zoom-0.5));
         }
-
-        arrowheadPath.setMap(nMap);
+        Path.setPatternImage(OverlayImage.fromResource(R.drawable.map_guide));
+        Path.setPatternInterval(40);
+        Path.setMap(nMap);
     }
 
     public void setNillArrow(){
-        if(arrowheadPath!=null){
-            arrowheadPath.setMap(null);
+        if(Path!=null){
+            Path.setMap(null);
         }
 
     }

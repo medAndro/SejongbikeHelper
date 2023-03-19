@@ -30,7 +30,9 @@ import com.android.volley.toolbox.Volley;
 import com.google.android.material.tabs.TabLayout;
 import com.google.gson.Gson;
 import android.content.SharedPreferences.Editor;
+import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.JsonArray;
@@ -43,6 +45,8 @@ import com.naver.maps.geometry.LatLng;
 import java.lang.reflect.Type;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -143,6 +147,84 @@ public class MainActivity extends AppCompatActivity {
         if(arrList.size()<2){
             Toast.makeText(this, "거리가 너무 짧아 표시할 수 없습니다.", Toast.LENGTH_SHORT).show();
         }else{
+            long first_timestamp = 0;
+            long last_timestamp = 0;
+            String firstQuery = "SELECT * FROM gps_data WHERE gpsListID = " + time + " ORDER BY timestamp ASC LIMIT 1";
+            cursor = db.rawQuery(firstQuery, null);
+            if (cursor.moveToFirst()) {
+                first_timestamp = Long.parseLong(cursor.getString(4));
+            }
+            String lastQuery = "SELECT * FROM gps_data WHERE gpsListID = " + time + " ORDER BY timestamp DESC LIMIT 1";
+            cursor = db.rawQuery(lastQuery, null);
+            if (cursor.moveToFirst()) {
+                last_timestamp =  Long.parseLong(cursor.getString(4));
+            }
+            String getDistanceQuery = "SELECT distance FROM gps_list WHERE gpsListTime = "+time;
+            cursor = db.rawQuery(getDistanceQuery, null);
+            double distanceInMeters = 0.0;
+            if (cursor.moveToFirst()) {
+                distanceInMeters = cursor.getDouble(0);
+            }
+            cursor.close();
+
+            long timeInMillis = last_timestamp-first_timestamp;
+            double timeInSeconds = timeInMillis / 1000.0; // 밀리초를 초 단위로 변환
+
+            double speedInMps = distanceInMeters / timeInSeconds; // 미터/초
+            double speedInKph = (speedInMps * 3600) / 1000; // 시속(km/h) 단위로 변환
+
+            String formattedSpeed = String.format("%.2f", speedInKph);
+
+            Date first_date = new Date(first_timestamp);
+            Calendar fcalendar = Calendar.getInstance();
+            fcalendar.setTime(first_date);
+            int fmonth = fcalendar.get(Calendar.MONTH); // 월 (0부터 시작하므로 1을 더해줘야 함)
+            int fday = fcalendar.get(Calendar.DAY_OF_MONTH); // 일
+            int fhour = fcalendar.get(Calendar.HOUR_OF_DAY); // 24시간 기준 시간
+            int fminute = fcalendar.get(Calendar.MINUTE); // 분
+            int fsecond = fcalendar.get(Calendar.SECOND); // 초
+            fmonth+=1;
+
+
+            Date last_date = new Date(last_timestamp);
+            Calendar lcalendar = Calendar.getInstance();
+            lcalendar.setTime(last_date);
+            int lmonth = lcalendar.get(Calendar.MONTH); // 월 (0부터 시작하므로 1을 더해줘야 함)
+            int lday = lcalendar.get(Calendar.DAY_OF_MONTH); // 일
+            int lhour = lcalendar.get(Calendar.HOUR_OF_DAY); // 24시간 기준 시간
+            int lminute = lcalendar.get(Calendar.MINUTE); // 분
+            int lsecond = lcalendar.get(Calendar.SECOND); // 초
+            lmonth+=1;
+
+            int seconds = 0;
+            int minutes = 0;
+            int hours   = 0;
+            String distanceTxt = "";
+            if(distanceInMeters>1000)
+                distanceTxt = String.format("%.2fKm", distanceInMeters/1000);
+            else
+                distanceTxt = String.format("%.2fM", distanceInMeters);
+
+            long diffInMillis = last_timestamp - first_timestamp; // 밀리초 단위의 차이 계산
+            seconds = (int) (diffInMillis / 1000) % 60;
+            minutes = (int) ((diffInMillis / (1000*60)) % 60);
+            hours   = (int) ((diffInMillis / (1000*60*60)) % 24);
+            String mapLogText = "주행시작 : "+fmonth +"월 "+fday+"일 - "+fhour+"시 "+fminute+"분 " +fsecond+"초\n"+
+                    "주행종료 : "+lmonth +"월 "+lday+"일 - "+lhour+"시 "+lminute+"분 " +lsecond+"초\n"+
+                    "평균속력 : "+formattedSpeed+"km/h\n" +
+                    "주행거리 : "+distanceTxt+"\n" +
+                    "주행시간 : ";
+
+            if(hours > 0)
+                mapLogText+=hours+"시간 ";
+            if(minutes > 0)
+                mapLogText+=minutes+"분 ";
+            mapLogText+=seconds+"초";
+
+            TextView mTextView = findViewById(R.id.maplogInfoTextView);
+            mTextView.setText(mapLogText);
+            mTextView.setVisibility(View.VISIBLE);
+
             ((MapFragment) getSupportFragmentManager().findFragmentByTag("mapFragment")).showGpsHistory(arrList);
             if(mapFragment != null) fragmentManager.beginTransaction().show(mapFragment).commit();
             if(bookmarkFragment != null) fragmentManager.beginTransaction().hide(bookmarkFragment).commit();
@@ -309,18 +391,22 @@ public class MainActivity extends AppCompatActivity {
                         ((MapFragment) getSupportFragmentManager().findFragmentByTag("mapFragment")).setNillArrow();
                         refreshSavedStation();
                     }
+                    ((MapFragment) getSupportFragmentManager().findFragmentByTag("mapFragment")).setNillArrow();
+                    TextView mTextView = findViewById(R.id.maplogInfoTextView);
+                    mTextView.setVisibility(View.GONE);
                     if(mapFragment != null) fragmentManager.beginTransaction().hide(mapFragment).commit();
                     if(gpsLogFragment != null) fragmentManager.beginTransaction().hide(gpsLogFragment).commit();
                 }else if(position == 2){
-
                     if(gpsLogFragment == null) {
                         gpsLogFragment = new GpsLogFragment();
                         fragmentManager.beginTransaction().add(R.id.container, gpsLogFragment, "gpsLogFragment").commit();
                     }else if(gpsLogFragment != null){
                         fragmentManager.beginTransaction().show(gpsLogFragment).commit();
                         ((GpsLogFragment) getSupportFragmentManager().findFragmentByTag("gpsLogFragment")).listDataChange();
-                        ((MapFragment) getSupportFragmentManager().findFragmentByTag("mapFragment")).setNillArrow();
                     }
+                    ((MapFragment) getSupportFragmentManager().findFragmentByTag("mapFragment")).setNillArrow();
+                    TextView mTextView = findViewById(R.id.maplogInfoTextView);
+                    mTextView.setVisibility(View.GONE);
                     if(mapFragment != null) fragmentManager.beginTransaction().hide(mapFragment).commit();
                     if(bookmarkFragment != null) fragmentManager.beginTransaction().hide(bookmarkFragment).commit();
                 }
