@@ -89,6 +89,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback
     Marker clickedMarker = new Marker();
     ProgressDialog spinDialog;
     PathOverlay Path;
+    int GPSbtnColor = Color.parseColor("#FF6200EE");
     //위치 권한요구
     private FusedLocationSource locationSource;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1000;
@@ -99,9 +100,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback
     };
 
     public void setStopGpsService(){
-        gpsButtonText = "주행기록 시작";
+        gpsButtonText = "주행 기록하기";
         gpsBtn.setText(gpsButtonText);
-
+        gpsBtn.setBackgroundColor(Color.parseColor("#FF6200EE"));
         SharedPreferences prefs = getContext().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
         prefs.edit().putString(KEY_GPSBUTTON_TEXT, gpsButtonText).apply();
     }
@@ -128,14 +129,17 @@ public class MapFragment extends Fragment implements OnMapReadyCallback
         if (((MainActivity)getActivity()).isGpsServiceRunning()) {
             ((MainActivity)getActivity()).stopGpsService();
             Toast.makeText(getContext(), "주행정보 기록을 중지합니다.", Toast.LENGTH_SHORT).show();
-            gpsButtonText = "주행기록 시작";
+            gpsButtonText = "주행 기록하기";
+            GPSbtnColor = Color.parseColor("#FF6200EE");
+
         } else {
             ((MainActivity)getActivity()).startGpsService();
             Toast.makeText(getContext(), "주행정보 기록을 시작합니다.", Toast.LENGTH_SHORT).show();
             gpsButtonText = "주행기록 중지";
+            GPSbtnColor = Color.parseColor("#FF0000");
         }
         gpsBtn.setText(gpsButtonText);
-
+        gpsBtn.setBackgroundColor(GPSbtnColor);
         SharedPreferences prefs = getContext().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
         prefs.edit().putString(KEY_GPSBUTTON_TEXT, gpsButtonText).apply();
     }
@@ -208,6 +212,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback
                     } else {
                         // 권한이 허용되어 있는 경우
                         setGpsButtonText();
+
                     }
                 }else{
                     if (permissionCheck == PackageManager.PERMISSION_DENIED) {

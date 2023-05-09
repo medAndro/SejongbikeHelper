@@ -38,7 +38,7 @@ public class BookmarkFragment extends Fragment {
     private static final String KEY_BUTTON_TEXT = "key_button_text";
     private String mButtonText;
     public void setStopService(){
-        mButtonText = "서비스 시작";
+        mButtonText = "알림 서비스 시작";
         startBtnBtn.setText(mButtonText);
 
         SharedPreferences prefs = getContext().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
@@ -47,12 +47,12 @@ public class BookmarkFragment extends Fragment {
     public void setmButtonText(){
         if (((MainActivity)getActivity()).isServiceRunning()) {
             ((MainActivity)getActivity()).stopService();
-            Toast.makeText(getContext(), "정류장 알림 서비스가 중지되었습니다.", Toast.LENGTH_SHORT).show();
-            mButtonText = "서비스 시작";
+            Toast.makeText(getContext(), "정류장 알림 서비스를 중지합니다.", Toast.LENGTH_SHORT).show();
+            mButtonText = "알림 서비스 시작";
         } else {
             ((MainActivity)getActivity()).startService();
-            Toast.makeText(getContext(), "정류장 알림 서비스가 시작되었습니다.", Toast.LENGTH_SHORT).show();
-            mButtonText = "서비스 중지";
+            Toast.makeText(getContext(), "정류장 알림 서비스를 시작합니다.", Toast.LENGTH_SHORT).show();
+            mButtonText = "알림 서비스 중지";
         }
         startBtnBtn.setText(mButtonText);
 
@@ -82,9 +82,9 @@ public class BookmarkFragment extends Fragment {
 
         // SharedPreferences에서 mButtonText 값을 불러옴
         SharedPreferences prefs = getContext().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
-        mButtonText = prefs.getString(KEY_BUTTON_TEXT, "서비스 시작"); //기본값이 서비스 시작
+        mButtonText = prefs.getString(KEY_BUTTON_TEXT, "알림 서비스 시작"); //기본값이 서비스 시작
         if (!((MainActivity)getActivity()).isServiceRunning()) {
-            mButtonText = "서비스 시작";
+            mButtonText = "알림 서비스 시작";
         }
         startBtnBtn.setText(mButtonText);
 
@@ -93,13 +93,7 @@ public class BookmarkFragment extends Fragment {
         stationAdapter = new StationAdapter(getContext(),((MainActivity)getActivity()).stations);
         customListView.setAdapter(stationAdapter);
 
-        Button refreshBtnBtn = rootView.findViewById(R.id.RefreshSavedListBtn);
-        refreshBtnBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ((MainActivity)getActivity()).refreshSavedStation();
-            }
-        });
+
 
         startBtnBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -110,6 +104,14 @@ public class BookmarkFragment extends Fragment {
 
 
         return rootView;
+    }
+    @Override
+    public void onResume() {
+        super.onResume();
+        // 앱이 백그라운드에서 포어그라운드로 돌아왔을 때 실행되는 코드
+        // 예를 들어, 화면을 다시 그리거나 데이터를 업데이트하는 등의 작업을 수행할 수 있습니다.
+        ((MainActivity)getActivity()).refreshSavedStation();
+        stationAdapter.notifyDataSetChanged();
     }
 
 }

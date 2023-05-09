@@ -2,50 +2,63 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/widget_background"
+    android:background="@color/light_blue_600"
     android:orientation="vertical">
-
-
-    <TextView
-        android:id="@+id/bike_widget_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:text="로딩실패시 다시 꺼내세요"
-        android:gravity="center"
-        android:layout_gravity="center"
-        android:layout_weight="5"
-        android:maxLines="3"
-        android:ellipsize="end"
-        android:textColor="#FBFBFB"
-        android:textSize="14sp" />
-
-    <TextView
-        android:id="@+id/bike_widget_num"
+    <FrameLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+    <ImageView
+        android:id="@+id/widget_background_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:layout_gravity="center"
-        android:layout_weight="1"
-        android:gravity="center"
-        android:text="x대"
-        android:textColor="#FBFBFB"
-        android:textSize="15sp"
-        android:textStyle="bold" />
+        android:layout_height="match_parent"
+        android:src="@drawable/widget_background00"/>
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:padding="2dp"
+            android:gravity="center">
+            <TextView
+                android:id="@+id/bike_widget_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:text="로딩실패시 다시 꺼내세요"
+                android:gravity="center"
+                android:layout_gravity="center"
+                android:layout_weight="5"
+                android:maxLines="3"
+                android:ellipsize="end"
+                android:textColor="#FBFBFB"
+                android:textSize="14sp" />
 
-    <TextView
-        android:id="@+id/bike_widget_time"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:text="🕒hh:ss"
-        android:gravity="center"
-        android:layout_gravity="center"
-        android:layout_weight="1"
-        android:textColor="#FBFBFB"
-        android:textSize="10sp" />
+            <TextView
+                android:id="@+id/bike_widget_num"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="x대"
+                android:textColor="#FBFBFB"
+                android:textSize="16sp"
+                android:textStyle="bold" />
 
+            <TextView
+                android:id="@+id/bike_widget_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:text="🕒hh:ss"
+                android:gravity="center"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:textColor="#FBFBFB"
+                android:textSize="9sp" />
+        </LinearLayout>
+    </FrameLayout>
 </LinearLayout>

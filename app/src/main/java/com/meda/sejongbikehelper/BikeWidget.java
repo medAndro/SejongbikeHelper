@@ -8,11 +8,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.Toast;
+
+import androidx.core.content.ContextCompat;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -116,22 +122,68 @@ public class BikeWidget extends AppWidgetProvider {
 
                 AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
                 SharedPreferences prefs = context.getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE);
+
+                RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.bike_widget);
+                GradientDrawable gradientDrawable = new GradientDrawable();
+                gradientDrawable.setShape(GradientDrawable.RECTANGLE);
+                gradientDrawable.setCornerRadius(10f);
+                gradientDrawable.setColors(new int[] {Color.parseColor("#5510ac"), Color.parseColor("#2871fa")});
+                gradientDrawable.setOrientation(GradientDrawable.Orientation.LEFT_RIGHT);
+                gradientDrawable.setGradientType(GradientDrawable.LINEAR_GRADIENT);
+
+
                 for (int appWidgetId: appWidgetIds){
 
                     String bikeId = prefs.getString(KEY_BUTTON_TEXT + appWidgetId, "Press me");
                     for (JsonObject j : new_bike_list) {
                         if(j.get("station_id").getAsString().equals(bikeId)){ // "SJ_00444")
                             widgetText = j.get("station_name").getAsString();
-                            widgetNum = "[ "+j.get("bike_parking").getAsString()+"대 ]";
+                            widgetNum = ""+j.get("bike_parking").getAsString()+"대";
+                            int bikeNum =Integer.parseInt(j.get("bike_parking").getAsString());
+                            switch(bikeNum) {
+                                case 0:
+                                    remoteViews.setImageViewResource(R.id.widget_background_view, R.drawable.widget_background100);
+                                    break;
+                                case 1:
+                                    remoteViews.setImageViewResource(R.id.widget_background_view, R.drawable.widget_background90);
+                                    break;
+                                case 2:
+                                    remoteViews.setImageViewResource(R.id.widget_background_view, R.drawable.widget_background80);
+                                    break;
+                                case 3:
+                                    remoteViews.setImageViewResource(R.id.widget_background_view, R.drawable.widget_background70);
+                                    break;
+                                case 4:
+                                    remoteViews.setImageViewResource(R.id.widget_background_view, R.drawable.widget_background60);
+                                    break;
+                                case 5:
+                                    remoteViews.setImageViewResource(R.id.widget_background_view, R.drawable.widget_background50);
+                                    break;
+                                case 6:
+                                    remoteViews.setImageViewResource(R.id.widget_background_view, R.drawable.widget_background40);
+                                    break;
+                                case 7:
+                                    remoteViews.setImageViewResource(R.id.widget_background_view, R.drawable.widget_background30);
+                                    break;
+                                case 8:
+                                    remoteViews.setImageViewResource(R.id.widget_background_view, R.drawable.widget_background20);
+                                    break;
+                                case 9:
+                                    remoteViews.setImageViewResource(R.id.widget_background_view, R.drawable.widget_background10);
+                                    break;
+                                default:
+                                    remoteViews.setImageViewResource(R.id.widget_background_view, R.drawable.widget_background00);
+                                    break;
+                            }
                             break;
                         }
                     }
-                    RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.bike_widget);
+
+
                     remoteViews.setTextViewText(R.id.bike_widget_text, widgetText);
                     //Toast.makeText(context, "\uD83D\uDD52"+getTime(), Toast.LENGTH_SHORT).show();
                     remoteViews.setTextViewText(R.id.bike_widget_time, "\uD83D\uDD52"+getTime());
                     remoteViews.setTextViewText(R.id.bike_widget_num, widgetNum);
-
 
                     appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
                 }

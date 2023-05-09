@@ -18,6 +18,7 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="20sp"
             android:layout_weight="1"
+            android:visibility="gone"
             android:text="서비스 버튼"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -28,6 +29,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="20sp"
             android:text="새로고침"
+            android:visibility="gone"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>

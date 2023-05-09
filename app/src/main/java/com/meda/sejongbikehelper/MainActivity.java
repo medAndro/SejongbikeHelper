@@ -321,7 +321,11 @@ public class MainActivity extends AppCompatActivity {
         ReadGpsLogData();
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
+        for (Station i : stations) {
+            if (i.getNotiAllow()) {
+                i.setNotiAllow(false);
+            }
+        }
 
         spinDialog = new ProgressDialog(this);
         spinDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
@@ -334,6 +338,13 @@ public class MainActivity extends AppCompatActivity {
         mBroadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
+                for (Station i : stations) {
+                    if (i.getNotiAllow()) {
+                        i.setNotiAllow(false);
+                    }
+                }
+                SaveStationData(stations);
+                ((BookmarkFragment) getSupportFragmentManager().findFragmentByTag("bookmarkFragment")).listDataChange();
                 Log.d("알림서비스","리시브받음");
                 if(((BookmarkFragment) getSupportFragmentManager().findFragmentByTag("bookmarkFragment")) != null) {
                     ((BookmarkFragment) getSupportFragmentManager().findFragmentByTag("bookmarkFragment")).setStopService();
@@ -345,7 +356,7 @@ public class MainActivity extends AppCompatActivity {
             public void onReceive(Context context, Intent intent) {
                 Log.d("주행기록","리시브받음");
                 if(((MapFragment) getSupportFragmentManager().findFragmentByTag("mapFragment")) != null) {
-                    ((MapFragment) getSupportFragmentManager().findFragmentByTag("mapFragment")).setStopGpsService();
+                   ((MapFragment) getSupportFragmentManager().findFragmentByTag("mapFragment")).setStopGpsService();
                 }
             }
         };

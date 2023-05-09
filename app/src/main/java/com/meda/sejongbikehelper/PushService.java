@@ -1,5 +1,6 @@
 package com.meda.sejongbikehelper;
 
+import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -32,6 +33,7 @@ import com.google.gson.JsonParser;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class PushService extends Service {
     BackgroundTask task;
@@ -104,7 +106,13 @@ public class PushService extends Service {
             Intent broadcastIntent = new Intent();
             broadcastIntent.setAction("com.meda.SejongbokeHelper.BTN_TEXT_CHANGE_ACTION");
             sendBroadcast(broadcastIntent);
-            Toast.makeText(getApplicationContext(), "정류장 알림 서비스가 중지되었습니다.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "정류장 알림 서비스를 중지합니다.", Toast.LENGTH_SHORT).show();
+            for (Station i : stations) {
+                if (i.getNotiAllow()) {
+                    i.setNotiAllow(false);
+                }
+            }
+
 
         }else{
             stations = (ArrayList<Station>) intent.getSerializableExtra("stations");
@@ -112,6 +120,16 @@ public class PushService extends Service {
         }
 
         return START_STICKY;
+    }
+
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        super.onTaskRemoved(rootIntent);
+
+        // 강제 종료됐을 때 실행할 코드
+        // 예를 들어, 로그를 출력하거나 파일에 저장할 수 있습니다.
+        stopSelf();
+
     }
 
     //포그라운드 서비스

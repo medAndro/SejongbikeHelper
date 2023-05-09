@@ -157,7 +157,43 @@ public class WidgetConfigActivity extends AppCompatActivity {
                 for (JsonObject j : new_bike_list) {
                     if(j.get("station_id").getAsString().equals(stations.get(spinner.getSelectedItemPosition()).getId())){ // "SJ_00444")
                         widgetText = j.get("station_name").getAsString();
-                        widgetNum = "[ "+j.get("bike_parking").getAsString()+"대 ]";
+                        widgetNum = ""+j.get("bike_parking").getAsString()+"대";
+                        int bikeNum =Integer.parseInt(j.get("bike_parking").getAsString());
+                        switch(bikeNum) {
+                            case 0:
+                                views.setImageViewResource(R.id.widget_background_view, R.drawable.widget_background100);
+                                break;
+                            case 1:
+                                views.setImageViewResource(R.id.widget_background_view, R.drawable.widget_background90);
+                                break;
+                            case 2:
+                                views.setImageViewResource(R.id.widget_background_view, R.drawable.widget_background80);
+                                break;
+                            case 3:
+                                views.setImageViewResource(R.id.widget_background_view, R.drawable.widget_background70);
+                                break;
+                            case 4:
+                                views.setImageViewResource(R.id.widget_background_view, R.drawable.widget_background60);
+                                break;
+                            case 5:
+                                views.setImageViewResource(R.id.widget_background_view, R.drawable.widget_background50);
+                                break;
+                            case 6:
+                                views.setImageViewResource(R.id.widget_background_view, R.drawable.widget_background40);
+                                break;
+                            case 7:
+                                views.setImageViewResource(R.id.widget_background_view, R.drawable.widget_background30);
+                                break;
+                            case 8:
+                                views.setImageViewResource(R.id.widget_background_view, R.drawable.widget_background20);
+                                break;
+                            case 9:
+                                views.setImageViewResource(R.id.widget_background_view, R.drawable.widget_background10);
+                                break;
+                            default:
+                                views.setImageViewResource(R.id.widget_background_view, R.drawable.widget_background00);
+                                break;
+                        }
                         break;
                     }
                 }

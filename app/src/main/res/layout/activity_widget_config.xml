@@ -6,17 +6,30 @@
     android:layout_height="match_parent"
     tools:context=".WidgetConfigActivity">
 
-    <Spinner
-        android:id="@+id/spinner"
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/MaterialCardView"
         android:layout_width="300dp"
         android:layout_height="48dp"
         android:layout_marginTop="100dp"
-        android:background="@drawable/spinner_background"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:gravity="center"
+        app:strokeWidth="1dp"
+        app:strokeColor="@color/black"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.495"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView"
-        tools:ignore="SpeakableTextPresentCheck" />
+        app:layout_constraintTop_toBottomOf="@+id/textView">
+
+    <androidx.appcompat.widget.AppCompatSpinner
+        android:id="@+id/spinner"
+        android:layout_gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:padding="0dp"/>
+
+    </com.google.android.material.card.MaterialCardView>
 
     <Button
         android:id="@+id/button"
@@ -28,7 +41,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/spinner" />
+        app:layout_constraintTop_toBottomOf="@+id/MaterialCardView" />
 
     <TextView
         android:id="@+id/textView"
