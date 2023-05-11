@@ -226,6 +226,10 @@ public class PushService extends Service {
                 if(j.get("station_id").getAsString().equals(i.getId())){
                     int origin = Integer.parseInt(i.getOriginBikeNum());
                     int refresh = Integer.parseInt(j.get("bike_parking").getAsString());
+                    //println(j.get("station_name").getAsString()+"정류장:" +refresh + "대");
+                    if(i.getNotiAllow()){
+                        println(j.get("station_name").getAsString()+"정류장 체크중");
+                    }
                     if(origin != refresh && i.getNotiAllow()){
                         if(origin==0 && refresh>0){
                             showNoti(j.get("station_name").getAsString()+" 정류장 이용가능!",
@@ -237,6 +241,7 @@ public class PushService extends Service {
                             showNoti(j.get("station_name").getAsString()+" 정류장 소진임박!",
                                     "잔여량이"+ refresh+"대로 감소하였습니다.");
                         }
+
                         //else if(origin != refresh){
                         //    showNoti(j.get("station_name").getAsString()+" 정류장 변경됨",
                         //            "잔여량이"+ refresh+"대로 변경되였습니다.");

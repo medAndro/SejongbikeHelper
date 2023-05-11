@@ -79,12 +79,20 @@ public class StationAdapter extends ArrayAdapter implements AdapterView.OnItemCl
                 }
 
                 if(notiChkSwitch.isChecked()){
+                    Log.d("토글체크","스위치 눌림");
                     ((MainActivity)context).setStationNotiToggle(position,true);
                     if(checkedNum==0){
                         //처음 체크되었을때
                         if (!((MainActivity)context).isServiceRunning()) {
                             ((MainActivity)context).startService();
                             Toast.makeText(getContext(), "정류장 알림 서비스를 시작합니다", Toast.LENGTH_SHORT).show();
+                        }
+                    }else{
+                        //두번째 이상 체크되었을때
+                        if (((MainActivity)context).isServiceRunning()) {
+                            ((MainActivity)context).stopService();
+                            ((MainActivity)context).startService();
+                            //Toast.makeText(getContext(), "정류장 알림 서비스를 시작합니다", Toast.LENGTH_SHORT).show();
                         }
                     }
                 }else{
@@ -94,6 +102,13 @@ public class StationAdapter extends ArrayAdapter implements AdapterView.OnItemCl
                         if (((MainActivity)context).isServiceRunning()) {
                             ((MainActivity)context).stopService();
                             Toast.makeText(getContext(), "정류장 알림 서비스를 중지합니다", Toast.LENGTH_SHORT).show();
+                        }
+                    }else{
+                        //마지막 체크가 아닐때
+                        if (((MainActivity)context).isServiceRunning()) {
+                            ((MainActivity)context).stopService();
+                            ((MainActivity)context).startService();
+                            //Toast.makeText(getContext(), "정류장 알림 서비스를 중지합니다", Toast.LENGTH_SHORT).show();
                         }
                     }
                 }
