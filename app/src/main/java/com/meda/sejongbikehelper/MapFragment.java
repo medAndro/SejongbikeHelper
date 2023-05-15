@@ -4,6 +4,7 @@ package com.meda.sejongbikehelper;
 import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -58,6 +59,12 @@ import com.naver.maps.map.widget.CompassView;
 import com.naver.maps.map.widget.LocationButtonView;
 import com.naver.maps.map.widget.ScaleBarView;
 import com.naver.maps.map.widget.ZoomControlView;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -90,6 +97,42 @@ public class MapFragment extends Fragment implements OnMapReadyCallback
     ProgressDialog spinDialog;
     PathOverlay Path;
     int GPSbtnColor = Color.parseColor("#FF6200EE");
+
+    public void modal(final View view, String msg) {
+        new AlertDialog.Builder(view.getContext())
+                .setTitle("위치 권한 수집 안내")
+                .setMessage(msg)
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        nMap.setLocationSource(locationSource);
+                        nMap.setLocationTrackingMode(LocationTrackingMode.Follow);
+                    }
+                }).setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        Toast.makeText(view.getContext(), "위치 권한 사용을 거부하셨습니다.", Toast.LENGTH_SHORT).show();
+                    }
+                }).show();
+    }
+
+    public void modal_onlyOK(final View view, String msg) {
+        new AlertDialog.Builder(view.getContext())
+                .setTitle("위치 권한 수집 안내")
+                .setMessage(msg)
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        Intent intent = new Intent();
+                        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                        Uri uri = Uri.fromParts("package",  getContext().getPackageName(), null);
+                        intent.setData(uri);
+                        startActivity(intent);
+                    }
+                }).show();
+    }
+
+
     //위치 권한요구
     private FusedLocationSource locationSource;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1000;
@@ -151,6 +194,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback
         // Inflate the layout for this fragment
         rootView = (ViewGroup) inflater.inflate(R.layout.fragment_map,
                 container, false);
+
         spinDialog = new ProgressDialog(getActivity());
         spinDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         spinDialog.setMessage("데이터를 불러오는 중입니다.");
@@ -203,12 +247,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     if (permissionCheck == PackageManager.PERMISSION_DENIED || backgroundPermissionCheck == PackageManager.PERMISSION_DENIED) {
                         // 권한이 거부되어 있는 경우
-                        Intent intent = new Intent();
-                        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                        Uri uri = Uri.fromParts("package",  getContext().getPackageName(), null);
-                        intent.setData(uri);
-                        startActivity(intent);
-                        Toast.makeText(getContext(), "백그라운드에서 기록하기 위해\n위치권한을 항상허용으로 설정하세요", Toast.LENGTH_SHORT).show();
+
+                        modal_onlyOK(rootView,"어울링 Helper앱에서 주행 기록하기 기능을 지원하기 위해 백그라운드에서 위치 데이터를 수집합니다." +
+                                "\n\n권한을 허용하려면 앱 설정에서 위치 액세스 권한을 \"항상 허용\"으로 설정하여 주십시오" +
+                                "\n\n확인을 누르면 설정으로 이동합니다.");
+
+
                     } else {
                         // 권한이 허용되어 있는 경우
                         setGpsButtonText();
@@ -217,12 +261,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback
                 }else{
                     if (permissionCheck == PackageManager.PERMISSION_DENIED) {
                         // 권한이 거부되어 있는 경우
-                        Intent intent = new Intent();
-                        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                        Uri uri = Uri.fromParts("package",  getContext().getPackageName(), null);
-                        intent.setData(uri);
-                        startActivity(intent);
-                        Toast.makeText(getContext(), "백그라운드에서 기록하기 위해\n위치권한을 허용으로 설정하세요", Toast.LENGTH_SHORT).show();
+                        modal(rootView,"어울링 Helper앱에서 주행 기록하기 기능을 지원하기 위해 백그라운드에서 위치 데이터를 수집합니다." +
+                                " \n\n권한을 허용하려면 확인을 누르세요");
                     } else {
                         // 권한이 허용되어 있는 경우
                         setGpsButtonText();
@@ -381,11 +421,21 @@ public class MapFragment extends Fragment implements OnMapReadyCallback
         LocationButtonView locationButtonView = rootView.findViewById(R.id.location);
         locationButtonView.setMap(nMap);
 
+        SharedPreferences preferences = rootView.getContext().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
+        boolean isFirstRun = preferences.getBoolean("isFirstRun", true);
+        //최초 실행에 한하여 위치 확인 묻기
+        if(isFirstRun){
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putBoolean("isFirstRun", false);
+            editor.apply();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                modal(rootView,"어울링 Helper앱이 실행중일 때 위치 데이터를 수집하여 현재 위치 표시기능을 제공합니다. \n\n권한을 허용하시려면 확인을 누르세요");
+            }else{
+                modal(rootView,"어울링 Helper앱이 실행중일 때 위치 데이터를 수집하여 현재 위치 표시기능을 제공합니다. " +
+                        "\n\n또한 주행 기록하기 기능을 사용할 경우 백그라운드에서 위치 데이터를 수집하여 주행정보를 기록합니다. \n\n권한을 허용하시려면 확인을 누르세요");
+            }
+        }
 
-
-        nMap.setLocationSource(locationSource);  //현재 위치
-
-        nMap.setLocationTrackingMode(LocationTrackingMode.Follow);
         naverMap.setCameraPosition(cameraPosition);
     }
 

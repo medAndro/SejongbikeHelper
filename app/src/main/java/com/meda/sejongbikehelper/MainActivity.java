@@ -356,6 +356,7 @@ public class MainActivity extends AppCompatActivity {
             public void onReceive(Context context, Intent intent) {
                 Log.d("주행기록","리시브받음");
                 if(((MapFragment) getSupportFragmentManager().findFragmentByTag("mapFragment")) != null) {
+                   stopGpsService();
                    ((MapFragment) getSupportFragmentManager().findFragmentByTag("mapFragment")).setStopGpsService();
                 }
             }
