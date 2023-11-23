@@ -1,11 +1,14 @@
 package com.meda.sejongbikehelper;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.ProgressDialog;
@@ -14,9 +17,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -68,6 +73,8 @@ public class MainActivity extends AppCompatActivity {
     private FragmentManager fragmentManager;
     ArrayList<Station> stations;
     ArrayList<GPS> gpsLogs;
+
+    private static final int REQUEST_POST_NOTIFICATIONS = 112;
 
     public static class MyDatabaseHelper extends SQLiteOpenHelper {
         private static final String DATABASE_NAME = "gps.db";
@@ -326,7 +333,11 @@ public class MainActivity extends AppCompatActivity {
                 i.setNotiAllow(false);
             }
         }
-
+        if (Build.VERSION.SDK_INT > 32) {
+            if (!shouldShowRequestPermissionRationale("112")){
+                getNotificationPermission();
+            }
+        }
         spinDialog = new ProgressDialog(this);
         spinDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         spinDialog.setMessage("남은 자전거수를 갱신하는 중입니다.");
@@ -363,11 +374,11 @@ public class MainActivity extends AppCompatActivity {
         };
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction("com.meda.SejongbokeHelper.BTN_TEXT_CHANGE_ACTION");
-        registerReceiver(mBroadcastReceiver, intentFilter);
+        registerReceiver(mBroadcastReceiver, intentFilter, RECEIVER_NOT_EXPORTED);
 
         IntentFilter intentFilterGps = new IntentFilter();
         intentFilterGps.addAction("com.meda.SejongbokeHelper.GPSBTN_TEXT_CHANGE_ACTION");
-        registerReceiver(gpsBroadcastReceiver, intentFilterGps);
+        registerReceiver(gpsBroadcastReceiver, intentFilterGps, RECEIVER_NOT_EXPORTED);
 
 
         fragmentManager = getSupportFragmentManager();
@@ -504,7 +515,38 @@ public class MainActivity extends AppCompatActivity {
         stopService(serviceIntent);
         ReadGpsLogData();
     }
+    public void getNotificationPermission(){
+        try {
+            if (Build.VERSION.SDK_INT > 32) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                        REQUEST_POST_NOTIFICATIONS);
+            }
 
+        }catch (Exception e){
+
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        switch (requestCode) {
+            case REQUEST_POST_NOTIFICATIONS:
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 &&
+                        grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // allow
+
+                }  else {
+                    //deny
+                }
+                return;
+
+        }
+
+    }
 
     @Override
     protected void onDestroy() {

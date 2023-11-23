@@ -1,5 +1,6 @@
 package com.meda.sejongbikehelper;
 
+import android.Manifest;
 import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -8,6 +9,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.IBinder;
@@ -16,7 +18,9 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.fragment.app.Fragment;
 
@@ -35,7 +39,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+
 public class PushService extends Service {
+
     BackgroundTask task;
     ArrayList<Station> stations;
     JsonObject jsonObject;
@@ -53,6 +59,8 @@ public class PushService extends Service {
     public static ArrayList<JsonObject> old_bike_list = new ArrayList();
     int value = 0;
     int notinum = 1;
+
+
 
     public void showNoti(String title, String contents){
         builder = null;
@@ -82,6 +90,7 @@ public class PushService extends Service {
         Notification notification = builder.build();
         notinum++;
         //알림창 실행
+
         manager.notify(notinum,notification);
     }
 
