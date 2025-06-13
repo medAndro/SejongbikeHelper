@@ -11,7 +11,7 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         jcenter()
-        maven { url "https://naver.jfrog.io/artifactory/maven/" }
+        maven { url "https://repository.map.naver.com/archive/maven" }
     }
 }
 rootProject.name = "SejongbikeHelper"

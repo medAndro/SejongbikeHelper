@@ -8,9 +8,9 @@ android {
     defaultConfig {
         applicationId "com.meda.sejongbikehelper"
         minSdk 22
-        targetSdk 33
-        versionCode 6
-        versionName "1.0.3"
+        targetSdk 34
+        versionCode 8
+        versionName "1.0.4"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
