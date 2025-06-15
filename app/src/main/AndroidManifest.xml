@@ -61,8 +61,8 @@
         </activity>
 
         <meta-data
-            android:name="com.naver.maps.map.CLIENT_ID"
-            android:value="xitlxjsi4a" />
+            android:name="com.naver.maps.map.NCP_KEY_ID"
+            android:value="u1ogmjnaq6" />
     </application>
 
 </manifest>

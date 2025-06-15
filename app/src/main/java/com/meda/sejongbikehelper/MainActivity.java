@@ -46,6 +46,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import com.naver.maps.geometry.LatLng;
+import com.naver.maps.map.NaverMapSdk;
 
 import java.lang.reflect.Type;
 
@@ -98,6 +99,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onCreate(SQLiteDatabase db) {
+
             db.execSQL(SQL_CREATE_TABLE_GPS);
             db.execSQL(SQL_CREATE_TABLE_GPS_LIST);
         }
