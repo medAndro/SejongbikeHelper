@@ -336,7 +336,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         if (Build.VERSION.SDK_INT > 32) {
-            if (!shouldShowRequestPermissionRationale("112")){
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 getNotificationPermission();
             }
         }
